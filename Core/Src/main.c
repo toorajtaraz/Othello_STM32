@@ -73,7 +73,7 @@ UART_HandleTypeDef huart3;
 /* USER CODE BEGIN PV */
 uint8_t status_led_sw = LED_DEFAULT;
 
-uint8_t selected_sqr[2] = {};
+uint8_t selected_sqr[3] = {SQR_1, A_SQR, SQR_DEFAULT};
 
 
 unsigned char data;
@@ -125,7 +125,6 @@ byte up_white[] = {
   0x00,
   0x00
 };
-
 byte up_black[] = {
   0x04,
   0x0E,
@@ -176,6 +175,8 @@ byte up_black_down_white[] = {
   0x0A,
   0x04
 };
+
+extern uint8_t board[BROWS][BCOLS];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -259,23 +260,31 @@ void add_special_chars() {
 void update_selected_sqr() {
   switch (keymap[cur_pressed[0]][cur_pressed[1]]) {
     case KEYPAD_UP: {
-
+      if(IS_UP_IN_RANGE(selected_sqr[BROW], selected_sqr[BCOL])) {
+        selected_sqr[BROW]--;
+      }
     };
       break;
     case KEYPAD_DOWN: {
-
+      if(IS_DOWN_IN_RANGE(selected_sqr[BROW], selected_sqr[BCOL])) {
+        selected_sqr[BROW]++;
+      }
     };
       break;
     case KEYPAD_LEFT: {
-
+      if(IS_LEFT_IN_RANGE(selected_sqr[BROW], selected_sqr[BCOL])) {
+        selected_sqr[BCOL]--;
+      }
     };
       break;
     case KEYPAD_RIGHT: {
-
+      if(IS_RIGHT_IN_RANGE(selected_sqr[BROW], selected_sqr[BCOL])) {
+        selected_sqr[BCOL]++;
+      }
     };
       break;
     case KEYPAD_OK: {
-
+      selected_sqr[BSW] = SQR_SELECTED;
     };
       break;
   }

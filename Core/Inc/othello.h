@@ -9,6 +9,9 @@ typedef uint8_t bool;
 #define SQR_COUNT 64
 #define BCOLS 8
 #define BROWS 8
+#define BROW 0
+#define BCOL 1
+#define BSW 2
 #define TRUE 1
 #define FALSE 0
 
@@ -38,6 +41,8 @@ typedef uint8_t bool;
 #define SQR_6 5
 #define SQR_7 6
 #define SQR_8 7
+#define SQR_SELECTED 0
+#define SQR_DEFAULT 1
 
 #define BOARD_UP(row, col) board[row - 1][col]
 #define BOARD_DOWN(row, col) board[row + 1][col]
