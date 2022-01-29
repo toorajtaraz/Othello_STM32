@@ -22,6 +22,23 @@ typedef uint8_t bool;
 #define DOWN_LEFT 7
 #define DIR_COUNT 8
 
+#define A_SQR 0
+#define B_SQR 1
+#define C_SQR 2
+#define D_SQR 3
+#define E_SQR 4
+#define F_SQR 5
+#define G_SQR 6
+#define H_SQR 7
+#define SQR_1 0
+#define SQR_2 1
+#define SQR_3 2
+#define SQR_4 3
+#define SQR_5 4
+#define SQR_6 5
+#define SQR_7 6
+#define SQR_8 7
+
 #define BOARD_UP(row, col) board[row - 1][col]
 #define BOARD_DOWN(row, col) board[row + 1][col]
 #define BOARD_RIGHT(row, col) board[row][col + 1]

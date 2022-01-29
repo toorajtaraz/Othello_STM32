@@ -125,6 +125,7 @@ extern UART_HandleTypeDef huart3;
 extern TIM_HandleTypeDef htim2;
 extern uint8_t cur_pressed[];
 extern uint8_t board[BROWS][BCOLS];
+extern uint8_t status_led_sw;
 /* USER CODE END EV */
 
 /******************************************************************************/

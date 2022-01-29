@@ -43,6 +43,11 @@ typedef uint8_t byte;
 #define CONST_COMMAND_LEN 9
 #define DEBOUNCE_DELAY 250
 #define EXTCOUNT 4
+#define KEYPAD_DOWN '8'
+#define KEYPAD_LEFT '4'
+#define KEYPAD_OK '5'
+#define KEYPAD_RIGHT '6'
+#define KEYPAD_UP '2'
 #define NOTPRESSED 128
 #define OUTPUTCOUNT 4
 /* USER CODE END PD */
@@ -66,6 +71,11 @@ TIM_HandleTypeDef htim7;
 UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
+uint8_t status_led_sw = LED_DEFAULT;
+
+uint8_t selected_sqr[2] = {};
+
+
 unsigned char data;
 unsigned char cmd[30] = {'\0'};
 int cmd_pointer = 0;
@@ -246,8 +256,34 @@ void add_special_chars() {
   createChar(DOWN_WHITE, down_white);
 }
 
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+void update_selected_sqr() {
+  switch (keymap[cur_pressed[0]][cur_pressed[1]]) {
+    case KEYPAD_UP: {
 
+    };
+      break;
+    case KEYPAD_DOWN: {
+
+    };
+      break;
+    case KEYPAD_LEFT: {
+
+    };
+      break;
+    case KEYPAD_RIGHT: {
+
+    };
+      break;
+    case KEYPAD_OK: {
+
+    };
+      break;
+  }
+  cur_pressed[0] = NOTPRESSED;
+  cur_pressed[1] = NOTPRESSED;
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   int now = HAL_GetTick();
   if((now - tick_prev_keypad) < DEBOUNCE_DELAY) {
     return;
@@ -270,6 +306,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   for(j = 0; j < OUTPUTCOUNT; j++) {
     HAL_GPIO_WritePin(GPIOD, output_pins[j], GPIO_PIN_SET);
   }
+  update_selected_sqr();
   HAL_UART_Transmit(&huart3, &keymap[cur_pressed[0]][cur_pressed[1]], sizeof(unsigned char), 1000);
 }
 /* USER CODE END 0 */

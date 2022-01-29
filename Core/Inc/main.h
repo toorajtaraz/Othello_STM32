@@ -203,6 +203,8 @@ void Error_Handler(void);
 #define UP_BLACK_DOWN_WHITE 5
 #define UP_DOWN_WHITE 6
 #define UP_DOWN_BLACK 7
+#define LED_WRONG_MOVE 0
+#define LED_DEFAULT 1
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
