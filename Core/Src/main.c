@@ -50,6 +50,9 @@ typedef uint8_t byte;
 #define KEYPAD_UP '2'
 #define NOTPRESSED 128
 #define OUTPUTCOUNT 4
+#define COLINDEX 0
+#define ROWINDEX 1
+#define COLORINDEX 3
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -88,7 +91,7 @@ int tick_prev_keypad = 0;
 uint16_t ext_pins[] = {GPIO_PIN_4, GPIO_PIN_5, GPIO_PIN_6, GPIO_PIN_7};
 uint16_t output_pins[] = {GPIO_PIN_0, GPIO_PIN_1, GPIO_PIN_2, GPIO_PIN_3};
 uint8_t cur_pressed[] = {NOTPRESSED, NOTPRESSED};
-unsigned char keymap[][4] = {
+const unsigned char keymap[][4] = {
               {'1', '2', '3', 'A'},
               {'4', '5', '6', 'B'},
               {'7', '8', '9', 'C'},
@@ -216,7 +219,87 @@ uint8_t command_type() {
 }
 
 void parse_command() {
+  if(
+    !(
+      cmd[ROWINDEX] <= '9' &&
+      cmd[ROWINDEX] >= '1' &&
+      cmd[COLINDEX] <= 'H' &&
+      cmd[COLINDEX] >= 'A' &&
+      (cmd[COLORINDEX] == 'W' || cmd[COLORINDEX] == 'B')
+    )
+  ) {
+    return;
+  }
+  switch (cmd[ROWINDEX]) {
+    case '1': {
+      selected_sqr[BROW] = SQR_1;
+    };
+      break;
+    case '2': {
+      selected_sqr[BROW] = SQR_2;
+    };
+      break;
+    case '3': {
+      selected_sqr[BROW] = SQR_3;
+    };
+      break;
+    case '4': {
+      selected_sqr[BROW] = SQR_4;
+    };
+      break;
+    case '5': {
+      selected_sqr[BROW] = SQR_5;
+    };
+      break;
+    case '6': {
+      selected_sqr[BROW] = SQR_6;
+    };
+      break;
+    case '7': {
+      selected_sqr[BROW] = SQR_7;
+    };
+      break;
+    case '8': {
+      selected_sqr[BROW] = SQR_8;
+    };
+      break;
+  }
 
+  switch (cmd[COLINDEX]) {
+    case 'A': {
+      selected_sqr[BCOL] = A_SQR;
+    };
+      break;
+    case 'B': {
+      selected_sqr[BCOL] = B_SQR;
+    };
+      break;
+    case 'C': {
+      selected_sqr[BCOL] = C_SQR;
+    };
+      break;
+    case 'D': {
+      selected_sqr[BCOL] = D_SQR;
+    };
+      break;
+    case 'E': {
+      selected_sqr[BCOL] = E_SQR;
+    };
+      break;
+    case 'F': {
+      selected_sqr[BCOL] = F_SQR;
+    };
+      break;
+    case 'G': {
+      selected_sqr[BCOL] = G_SQR;
+    };
+      break;
+    case 'H': {
+      selected_sqr[BCOL] = H_SQR;
+    };
+      break;
+  }
+  selected_sqr[BSW] = SQR_SELECTED;
 }
 
 void handle_command() {
@@ -316,7 +399,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     HAL_GPIO_WritePin(GPIOD, output_pins[j], GPIO_PIN_SET);
   }
   update_selected_sqr();
-  HAL_UART_Transmit(&huart3, &keymap[cur_pressed[0]][cur_pressed[1]], sizeof(unsigned char), 1000);
 }
 /* USER CODE END 0 */
 
