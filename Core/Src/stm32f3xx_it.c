@@ -23,6 +23,7 @@
 #include "stm32f3xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "othello.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -56,7 +57,6 @@ uint16_t note_to_play = 0;
 uint16_t cur_play_count = 0;
 
 const uint16_t melody[] = {
-
   // The Godfather theme
   // Score available at https://musescore.com/user/35463/scores/55160
 
@@ -124,6 +124,7 @@ extern UART_HandleTypeDef huart3;
 /* USER CODE BEGIN EV */
 extern TIM_HandleTypeDef htim2;
 extern uint8_t cur_pressed[];
+extern uint8_t board[BROWS][BCOLS];
 /* USER CODE END EV */
 
 /******************************************************************************/

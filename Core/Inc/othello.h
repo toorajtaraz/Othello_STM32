@@ -45,4 +45,12 @@ typedef uint8_t bool;
 #define RESET_APPLICABLE_DIRECTIONS() applicable_directions[0] = 1
 #define APPLICABLE_DIRECTIONS_COUNT applicable_directions[0]
 
+
+void initialize_board();
+bool is_valid_in_direction(uint8_t player, uint8_t pos_row, uint8_t pos_col, uint8_t direction);
+bool is_valid_move(uint8_t player, uint8_t pos_row, uint8_t pos_col);
+void apply_move_in_direction(uint8_t player, uint8_t pointer_row, uint8_t pointer_col, uint8_t direction);
+void apply_move(uint8_t player, uint8_t pos_row, uint8_t pos_col);
+void print_board();
+bool has_legal_move(uint8_t player);
 #endif // OTHELLO_H_

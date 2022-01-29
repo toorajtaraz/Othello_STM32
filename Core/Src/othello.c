@@ -1,4 +1,5 @@
 #include "othello.h"
+#include "LiquidCrystal.h"
 
 uint8_t board[BROWS][BCOLS] = {0};
 uint8_t directions[DIR_COUNT] = {

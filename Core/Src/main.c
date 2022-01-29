@@ -25,6 +25,7 @@
 #include "LiquidCrystal.h"
 #include "string.h"
 #include "stdio.h"
+#include "othello.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -34,10 +35,16 @@ typedef uint8_t byte;
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define COMMAND_END_GAME 1
+#define COMMAND_MOVE 2
+#define COMMAND_NEW_GAME 0
+#define COMMAND_UNKNOWN 3
+#define CONST_COMMAND_COUNT 2
+#define CONST_COMMAND_LEN 9
+#define DEBOUNCE_DELAY 250
 #define EXTCOUNT 4
-#define OUTPUTCOUNT 4
 #define NOTPRESSED 128
-
+#define OUTPUTCOUNT 4
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -60,11 +67,14 @@ UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
 unsigned char data;
-unsigned char msg[30] = {'\0'};
-int msg_pointer = 0;
-int sw = 0;
-uint16_t freq = 0;
-int tick_prev = 0;
+unsigned char cmd[30] = {'\0'};
+int cmd_pointer = 0;
+const unsigned char applicable_commands[2][9] = {
+  "NEW GAME\0",
+  "END GAME\0"
+};
+
+int tick_prev_keypad = 0;
 uint16_t ext_pins[] = {GPIO_PIN_4, GPIO_PIN_5, GPIO_PIN_6, GPIO_PIN_7};
 uint16_t output_pins[] = {GPIO_PIN_0, GPIO_PIN_1, GPIO_PIN_2, GPIO_PIN_3};
 uint8_t cur_pressed[] = {NOTPRESSED, NOTPRESSED};
@@ -74,9 +84,7 @@ unsigned char keymap[][4] = {
               {'7', '8', '9', 'C'},
               {'S', '0', 'D', 'E'}
 };
-uint8_t pass_pointer = 0;
-unsigned char password[9] = "12345678S";
-unsigned char input_pass[9] = {'\0'};
+
 byte down_white[] = {
   0x00,
   0x00,
@@ -177,81 +185,56 @@ static void MX_USART3_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void clean_msg() {
-    for(int i = 0; i < 30; i++) {
-      msg[i] = '\0';
+void clean_cmd() {
+    for(uint8_t i = 0; i < 30; i++) {
+      cmd[i] = '\0';
     }
 }
 
-int command_type() {
-  unsigned char command_2[] = {'S', 'E', 'T', ' ', 'B', 'U', 'Z', 'Z', 'E', 'R', ' ', 'F', 'R', 'E', 'Q', ' ', 'T', 'O', ' '};
-
-  unsigned char command_1[] = {'S', 'E', 'T', ' ', 'L', 'E', 'D', ' ', 'T', 'O', ' '};
-
-  int i = 0;
-  for(i = 0; i < 11; i++) {
-    if(msg[i] != command_1[i]) {
-      break;
+uint8_t command_type() {
+  uint8_t i = 0;
+  for(uint8_t j = 0; j < CONST_COMMAND_COUNT; j++) {
+    for(i = 0; i < (CONST_COMMAND_LEN - 1); i++) {
+      if(cmd[i] != applicable_commands[j][i]) {
+        break;
+      }
     }
+    if(i == (CONST_COMMAND_LEN - 1)) return j;
   }
-  if(i == 11) return 1;
-  for(i = 0; i < 19; i++) {
-    if(msg[i] != command_2[i]) {
-      break;
-    }
-  }
-  if(i == 19) return 2;
-  return -1;
+  return COMMAND_UNKNOWN;
+}
+
+void parse_command() {
+
 }
 
 void handle_command() {
-  int num = 0;
-  int cmd_type = command_type();
-  if(cmd_type == -1) return;
+  uint8_t cmd_type = command_type();
 
-  if(cmd_type == 1) {
-    sscanf(msg, "SET LED TO %d", &num);
-    if(num < 0 || num > 100) return;
-    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, num);
-    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, num);
-    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, num);
-    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, num);
-    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, num);
-    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, num);
-    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, num);
-    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, num);
-  } else if(cmd_type == 2) {
-    if (sw == 0 || sw == 2) {
-      sscanf(msg, "SET BUZZER FREQ TO %d", &num);
-      if((num < 0 || num > 20000) && sw != 2 && num != 99999) return;
-      if(num == 99999) {
-        sw = 2;
-      } else if(num == -1) {
-        sw = 3;
-      }else {
-        freq = num;
-        sw = 1;
-      }
-    }
+  if(cmd_type == COMMAND_NEW_GAME) {
+    //TODO IMPLEMENT NEW GAME
+  } else if(cmd_type == COMMAND_END_GAME) {
+    //TODO IMPLEMENT END GAME
+  } else {
+    parse_command();
   }
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
   if(huart->Instance == USART3){
-    msg[msg_pointer] = data == 0x0D ? '\0' : data;
-    if(++msg_pointer == 30 && data != 0x0D) {
-      clean_msg();
-      msg_pointer = 0;
+    cmd[cmd_pointer] = data == 0x0D ? '\0' : data;
+    if(++cmd_pointer == 30 && data != 0x0D) {
+      clean_cmd();
+      cmd_pointer = 0;
     } else if (data == 0x0D) {
       handle_command();
-      clean_msg();
-      msg_pointer = 0;
+      clean_cmd();
+      cmd_pointer = 0;
     }
   }
-
-  HAL_UART_Transmit(&huart3, &data, sizeof(unsigned char), 1000);
   HAL_UART_Receive_IT(&huart3,&data,sizeof(data));
 }
+
 void add_special_chars() {
   createChar(UP_WHITE, up_white);
   createChar(UP_BLACK, up_black);
@@ -262,18 +245,21 @@ void add_special_chars() {
   createChar(DOWN_BLACK, down_black);
   createChar(DOWN_WHITE, down_white);
 }
+
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+
   int now = HAL_GetTick();
-  if((now - tick_prev) < 270) {
+  if((now - tick_prev_keypad) < DEBOUNCE_DELAY) {
     return;
   }
-  tick_prev = now;
-  for(int i = 0; i < OUTPUTCOUNT; i++) {
-    for(int j = 0; j < OUTPUTCOUNT; j++) {
+  tick_prev_keypad = now;
+  uint8_t j = 0;
+  for(uint8_t i = 0; i < OUTPUTCOUNT; i++) {
+    for(j = 0; j < OUTPUTCOUNT; j++) {
       HAL_GPIO_WritePin(GPIOD, output_pins[j], GPIO_PIN_RESET);
     }
     HAL_GPIO_WritePin(GPIOD, output_pins[i], GPIO_PIN_SET);
-    for(int j = 0; j < EXTCOUNT; j++) {
+    for(j = 0; j < EXTCOUNT; j++) {
       if(HAL_GPIO_ReadPin(GPIOD, ext_pins[j])) {
         cur_pressed[0] = i;
         cur_pressed[1] = j;
@@ -281,7 +267,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     }
   }
 
-  for(int j = 0; j < OUTPUTCOUNT; j++) {
+  for(j = 0; j < OUTPUTCOUNT; j++) {
     HAL_GPIO_WritePin(GPIOD, output_pins[j], GPIO_PIN_SET);
   }
   HAL_UART_Transmit(&huart3, &keymap[cur_pressed[0]][cur_pressed[1]], sizeof(unsigned char), 1000);
@@ -328,9 +314,11 @@ int main(void)
   for(int j = 0; j < OUTPUTCOUNT; j++) {
     HAL_GPIO_WritePin(GPIOD, output_pins[j], GPIO_PIN_SET);
   }
+
   LiquidCrystal(GPIOD, GPIO_PIN_8, GPIO_PIN_9, GPIO_PIN_10, GPIO_PIN_11, GPIO_PIN_12, GPIO_PIN_13, GPIO_PIN_14);
   begin(20, 4);
   add_special_chars();
+
   HAL_ADC_Start_IT(&hadc4);
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
   HAL_TIM_Base_Start_IT(&htim2);
