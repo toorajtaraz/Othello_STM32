@@ -40,4 +40,5 @@ void to_bcd(uint8_t digit, uint8_t b[4]);
 void split_number(int num, uint8_t digits[4]);
 void handle_adaptive_volume();
 void handle_display();
+void handle_time_managment();
 #endif // UTILS_H_

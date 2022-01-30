@@ -77,4 +77,5 @@ void apply_move_in_direction(uint8_t player, uint8_t pointer_row, uint8_t pointe
 void apply_move(uint8_t player, uint8_t pos_row, uint8_t pos_col);
 void print_board();
 bool has_legal_move(uint8_t player);
+void handle_logic();
 #endif // OTHELLO_H_

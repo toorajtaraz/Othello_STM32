@@ -316,3 +316,7 @@ bool has_legal_move(uint8_t player) {
     RESET_APPLICABLE_DIRECTIONS();
     return FALSE;
 }
+
+void handle_logic() {
+
+}

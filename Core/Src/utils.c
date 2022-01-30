@@ -3,6 +3,10 @@
 #include "LiquidCrystal.h"
 #include "othello.h"
 
+//definitions start
+#define VOLUME_LEVEL 1000
+//definitions end
+
 //typedef start
 typedef uint8_t byte;
 //typedef end
@@ -437,26 +441,36 @@ void write_number(int num) {
 	if (num > 9999 || num < 0) return;
 	uint8_t digits[4] = {0};
 	uint8_t b[4] = {0};
-	int controllers[4][2] = {{GPIOA, GPIO_PIN_5}, {GPIOA, GPIO_PIN_2},
-				            {GPIOA, GPIO_PIN_3}, {GPIOA, GPIO_PIN_1}};
-	int ic[4][2] = {{GPIOA, GPIO_PIN_6}, {GPIOB, GPIO_PIN_2},
-				   {GPIOB, GPIO_PIN_1}, {GPIOA, GPIO_PIN_7}};
+	uint16_t controllers[4] = {
+                GPIO_PIN_5, GPIO_PIN_2,
+                GPIO_PIN_3, GPIO_PIN_1
+  };
+	uint16_t ic_pins[4] = {
+                GPIO_PIN_6, GPIO_PIN_2,
+                GPIO_PIN_1, GPIO_PIN_7
+  };
+	GPIO_TypeDef *ic_gpios[4] = {
+                GPIOA, GPIOB,
+                GPIOB, GPIOA
+  };
+
 	split_number(num, digits);
 	off_all();
 	to_bcd(digits[_i], b);
 	for(uint8_t j = 0; j < 4; j++) {
-		HAL_GPIO_WritePin(ic[j][0],  ic[j][1], b[j]);
+		HAL_GPIO_WritePin(ic_gpios[j],  ic_pins[j], b[j]);
 	}
-	HAL_GPIO_WritePin(GPIOA, controllers[_i][1], 0);
+	HAL_GPIO_WritePin(GPIOA, controllers[_i], 0);
 	if(++_i == 4) {
 		_i = 0;
 	}
 }
 
 void handle_melody() {
+  return;
   if(cur_play_count < (melody[note_to_play + 1] * song_tempo)) {
     if(cur_play_count == 0)
-      PWM_Change_Tone(melody[note_to_play], 0);
+      PWM_Change_Tone(melody[note_to_play], VOLUME_LEVEL);
     cur_play_count++;
   } else {
     cur_play_count = 0;
@@ -482,5 +496,14 @@ void handle_adaptive_volume() {
     }
     volume_prev_tick = HAL_GetTick();
   }
+}
+
+void handle_display() {
+
+}
+
+void handle_time_managment() {
+  //Runs every 0.1 seconds
+
 }
 //functions end
