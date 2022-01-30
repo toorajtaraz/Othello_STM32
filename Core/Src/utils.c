@@ -2,6 +2,7 @@
 #include "main.h"
 #include "LiquidCrystal.h"
 #include "othello.h"
+#include "math.h"
 
 //definitions start
 #define VOLUME_LEVEL 1000
@@ -24,9 +25,13 @@ extern uint8_t cur_pressed[];
 extern uint8_t board[BROWS][BCOLS];
 extern uint8_t status_led_sw;
 extern uint8_t selected_sqr[3];
+extern uint8_t game_state;
 //extern variables end
 
 //variables start
+
+uint8_t occupied = FALSE;
+
 uint32_t volume_prev_tick = 0;
 uint16_t volume_min_raw = 0;
 uint16_t volume_max_raw = 4095;
@@ -499,11 +504,15 @@ void handle_adaptive_volume() {
 }
 
 void handle_display() {
-
+  //some messy lock :)))
+  while(occupied);
+  occupied = TRUE;
+  print_board();
+  occupied = FALSE;
 }
 
 void handle_time_managment() {
   //Runs every 0.1 seconds
-
+  _num = (int) ceil((volume_raw / (volume_max_raw - volume_min_raw)));
 }
 //functions end

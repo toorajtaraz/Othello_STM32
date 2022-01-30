@@ -116,6 +116,8 @@ int main(void)
   MX_ADC4_Init();
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
+  initialize_board();
+
   for(int j = 0; j < OUTPUTCOUNT; j++) {
     HAL_GPIO_WritePin(GPIOD, output_pins[j], GPIO_PIN_SET);
   }

@@ -1,6 +1,7 @@
 #include "othello.h"
 #include "LiquidCrystal.h"
 
+uint8_t game_state = GAME_HALTED;
 uint8_t board[BROWS][BCOLS] = {0};
 uint8_t directions[DIR_COUNT] = {
     UP,
@@ -277,27 +278,30 @@ void apply_move(uint8_t player, uint8_t pos_row, uint8_t pos_col) {
 }
 
 void print_board() {
-    /* printf("\n "); */
-    /* for(uint8_t j = 0; j < 15; j++) { */
-    /*     printf("_"); */
-    /* } */
-    /* printf(" \n"); */
-    /* for(uint8_t i = 0; i < BROWS; i++) { */
-    /*     for(uint8_t j = 0; j < BCOLS; j++) { */
-    /*         printf("|"); */
-    /*         if(board[i][j] == EMPTY) */
-    /*             printf(" "); */
-    /*         else if (board[i][j] == WHITE) */
-    /*             printf("O"); */
-    /*         else */
-    /*             printf("*"); */
-    /*     } */
-    /*     printf("|\n|"); */
-    /*     for(uint8_t j = 0; j < 15; j++) { */
-    /*         printf("_"); */
-    /*     } */
-    /*     printf("|\n"); */
-    /* } */
+    for(uint8_t i = 0; i < BROWS; i += 2) {
+        for(uint8_t j = 0; j < BCOLS; j++) {
+            setCursor(BOARD_POS_COL_START + j, BOARD_POS_ROW_START + (i >> 1));
+            if (board[i][j] == BLACK && board[i + 1][j] == BLACK) {
+                write(UP_DOWN_BLACK);
+            } else if (board[i][j] == BLACK && board[i + 1][j] == EMPTY) {
+                write(UP_BLACK);
+            } else if (board[i][j] == BLACK && board[i + 1][j] == WHITE) {
+                write(UP_BLACK_DOWN_WHITE);
+            } else if (board[i][j] == EMPTY && board[i + 1][j] == BLACK) {
+                write(DOWN_BLACK);
+            } else if (board[i][j] == EMPTY && board[i + 1][j] == EMPTY) {
+                write(' ');
+            } else if (board[i][j] == EMPTY && board[i + 1][j] == WHITE) {
+                write(DOWN_WHITE);
+            } else if (board[i][j] == WHITE && board[i + 1][j] == BLACK) {
+                write(UP_WHITE_DOWN_BLACK);
+            } else if (board[i][j] == WHITE && board[i + 1][j] == EMPTY) {
+                write(UP_WHITE);
+            } else if (board[i][j] == WHITE && board[i + 1][j] == WHITE) {
+                write(UP_DOWN_WHITE);
+            }
+        }
+    }
 }
 
 bool has_legal_move(uint8_t player) {

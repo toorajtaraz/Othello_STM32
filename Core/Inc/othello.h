@@ -1,7 +1,17 @@
 #ifndef OTHELLO_H_
 #define OTHELLO_H_
 #include "main.h"
+
 typedef uint8_t bool;
+
+#define BOARD_POS_COL_START 6
+#define BOARD_POS_COL_END 13
+#define BOARD_POS_ROW_START 0
+#define BOARD_POS_ROW_END 3
+
+#define GAME_RUNNING 0
+#define GAME_ENDED 1
+#define GAME_HALTED 2
 
 #define WHITE 1
 #define BLACK 2
