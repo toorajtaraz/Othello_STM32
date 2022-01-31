@@ -21,6 +21,7 @@
 #define COLINDEX 0
 #define ROWINDEX 1
 #define COLORINDEX 3
+#define SONG_ORIGINAL_TEMPO 24
 
 
 

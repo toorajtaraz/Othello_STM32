@@ -7,7 +7,6 @@
 
 //definitions start
 #define VOLUME_LEVEL 1000
-#define SONG_ORIGINAL_TEMPO 24
 //definitions end
 
 //typedef start
@@ -465,6 +464,7 @@ void to_bcd(uint8_t digit, uint8_t b[4]) {
 }
 
 void off_all() {
+  HAL_GPIO_WritePin(GPIOF, GPIO_PIN_4, 0);
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1 , 1);
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, 1);
 	HAL_GPIO_WritePin(GPIOA,  GPIO_PIN_3, 1);
@@ -472,30 +472,41 @@ void off_all() {
 }
 
 void write_number(int num) {
-	if (num > 9999 || num < 0) return;
-	uint8_t digits[4] = {0};
-	uint8_t b[4] = {0};
-	uint16_t controllers[4] = {
+  if (num > 9999 || num < 0) return;
+  uint8_t digits[4] = {0};
+  uint8_t b[4] = {0};
+  uint16_t controllers[4] = {
                 GPIO_PIN_5, GPIO_PIN_2,
                 GPIO_PIN_3, GPIO_PIN_1
   };
-	uint16_t ic_pins[4] = {
+  uint16_t ic_pins[4] = {
                 GPIO_PIN_6, GPIO_PIN_2,
                 GPIO_PIN_1, GPIO_PIN_7
   };
-	GPIO_TypeDef *ic_gpios[4] = {
+  GPIO_TypeDef *ic_gpios[4] = {
                 GPIOA, GPIOB,
                 GPIOB, GPIOA
   };
 
-	split_number(num, digits);
-	off_all();
-	to_bcd(digits[_i], b);
-	for(uint8_t j = 0; j < 4; j++) {
-		HAL_GPIO_WritePin(ic_gpios[j],  ic_pins[j], b[j]);
-	}
-	HAL_GPIO_WritePin(GPIOA, controllers[_i], 0);
-	if(++_i == 4) {
+  if(_i <= 3) {
+    split_number(num, digits);
+    off_all();
+    to_bcd(digits[_i], b);
+    for(uint8_t j = 0; j < 4; j++) {
+      HAL_GPIO_WritePin(ic_gpios[j],  ic_pins[j], b[j]);
+    }
+    HAL_GPIO_WritePin(GPIOA, controllers[_i], 0);
+  } else {
+    split_number(num, digits);
+    off_all();
+    to_bcd(digits[1], b);
+    for(uint8_t j = 0; j < 4; j++) {
+      HAL_GPIO_WritePin(ic_gpios[j],  ic_pins[j], b[j]);
+    }
+    HAL_GPIO_WritePin(GPIOA, controllers[1], 0);
+    HAL_GPIO_WritePin(GPIOF, GPIO_PIN_4, 1);
+  }
+	if(++_i == 5) {
 		_i = 0;
 	}
 }

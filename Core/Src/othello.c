@@ -2,9 +2,14 @@
 #include "LiquidCrystal.h"
 #include "string.h"
 #include "stdio.h"
+#include "utils.h"
 
 extern uint8_t status_led_sw;
 extern uint8_t selected_sqr[];
+
+extern uint8_t cur_play_count;
+extern uint8_t note_to_play;
+extern uint8_t song_tempo;
 
 uint8_t game_state = GAME_HALTED;
 uint8_t board[BROWS][BCOLS] = {0};
@@ -22,7 +27,8 @@ uint8_t applicable_directions[DIR_COUNT + 1]= {1};
 uint8_t white_score = 2;
 uint8_t black_score = 2;
 char turn = 'B';
-
+char winner = 'B';
+uint8_t game_end_reason;
 
 uint8_t game_total_time;
 uint8_t elapsed_game_time;
@@ -428,13 +434,19 @@ void print_game_info() {
 
     setCursor(LEFT_INFO_POS_COL_START, INFO_POS_ROW_END);
     sprintf(&info[0], (white_score > black_score) ? "%02d W" : "%02d B", (white_score > black_score) ? (white_score - black_score) : (black_score - white_score));
+    winner = (white_score > black_score) ? 'W' : 'B';
     print(info);
     if (game_state == GAME_ENDED) {
         setCursor(RIGHT_INFO_POS_COL_START, INFO_POS_ROW_START);
-        print("OVER");
+        print("END|");
+        if(game_end_reason == WIN) {
+            print(&winner);
+        } else if(game_end_reason == TIMEOUT) {
+            print(&turn);
+        }
     } else {
         setCursor(RIGHT_INFO_POS_COL_START, INFO_POS_ROW_START);
-        print("    ");
+        print("     ");
     }
 }
 
@@ -469,11 +481,6 @@ void handle_logic() {
     }
     if(game_state == GAME_ENDED || game_state == GAME_HALTED || ! (selected_sqr[BSW] == SQR_SELECTED)) return;
 
-    if(has_legal_move((turn == 'W') ? WHITE : BLACK) == FALSE) {
-        turn = turn == 'B' ? 'W' : 'B';
-        return;
-    }
-
     if (is_valid_move((turn == 'W') ? WHITE : BLACK, selected_sqr[BROW], selected_sqr[BCOL]) == FALSE) {
         selected_sqr[BSW] = SQR_DEFAULT;
         status_led_sw = LED_WRONG_MOVE;
@@ -485,8 +492,15 @@ void handle_logic() {
     }
     game_round_prev_tick = HAL_GetTick();
     elapsed_game_time = game_total_time;
+    song_tempo = SONG_ORIGINAL_TEMPO;
+    cur_play_count = 0;
+    note_to_play = 0;
     turn = turn == 'B' ? 'W' : 'B';
     if(has_legal_move(BLACK) == FALSE && has_legal_move(WHITE) == FALSE) {
         game_state = GAME_ENDED;
+    }
+    if(has_legal_move((turn == 'W') ? WHITE : BLACK) == FALSE) {
+        turn = turn == 'B' ? 'W' : 'B';
+        return;
     }
 }

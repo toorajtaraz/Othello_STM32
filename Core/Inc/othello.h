@@ -62,6 +62,8 @@ typedef uint8_t bool;
 #define SQR_DEFAULT 1
 #define B_NEW_GAME 2
 #define B_END_GAME 3
+#define WIN 0
+#define TIMEOUT 1
 
 #define BOARD_UP(row, col) board[row - 1][col]
 #define BOARD_DOWN(row, col) board[row + 1][col]
