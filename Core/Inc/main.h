@@ -205,6 +205,8 @@ void Error_Handler(void);
 #define UP_DOWN_BLACK 7
 #define LED_WRONG_MOVE 0
 #define LED_DEFAULT 1
+#define LED_WRONG_MOVE_BLINK_COUNT 6
+#define LED_TEMPO 55
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

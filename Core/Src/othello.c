@@ -3,6 +3,7 @@
 #include "string.h"
 #include "stdio.h"
 
+extern uint8_t status_led_sw;
 extern uint8_t selected_sqr[];
 
 uint8_t game_state = GAME_HALTED;
@@ -450,7 +451,17 @@ bool has_legal_move(uint8_t player) {
 }
 
 void handle_logic() {
-    if(! (selected_sqr[BSW] == SQR_SELECTED)) return;
+    if(selected_sqr[BSW] == B_NEW_GAME) {
+        initialize_board();
+        game_state = GAME_RUNNING;
+        return;
+    }
+    if(selected_sqr[BSW] == B_END_GAME) {
+        initialize_board();
+        game_state = GAME_HALTED;
+        return;
+    }
+    if(game_state == GAME_ENDED || game_state == GAME_HALTED || ! (selected_sqr[BSW] == SQR_SELECTED)) return;
 
     if(has_legal_move((turn == 'W') ? WHITE : BLACK) == FALSE) {
         turn = turn == 'B' ? 'W' : 'B';
@@ -459,6 +470,7 @@ void handle_logic() {
 
     if (is_valid_move((turn == 'W') ? WHITE : BLACK, selected_sqr[BROW], selected_sqr[BCOL]) == FALSE) {
         selected_sqr[BSW] = SQR_DEFAULT;
+        status_led_sw = LED_WRONG_MOVE;
         return;
     }
     if(selected_sqr[BSW] == SQR_SELECTED) {

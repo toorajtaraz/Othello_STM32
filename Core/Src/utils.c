@@ -25,9 +25,12 @@ extern uint8_t cur_pressed[];
 extern uint8_t board[BROWS][BCOLS];
 extern uint8_t status_led_sw;
 extern uint8_t game_state;
+extern char turn;
 //extern variables end
 
 //variables start
+uint8_t led_blink_count = 0;
+uint8_t led_blink_tempo = 0;
 
 uint8_t occupied_display = FALSE;
 
@@ -294,6 +297,10 @@ void parse_command() {
       break;
   }
   selected_sqr[BSW] = SQR_SELECTED;
+  if(cmd[COLORINDEX] != turn) {
+    status_led_sw = LED_WRONG_MOVE;
+    return;
+  }
   handle_logic();
 }
 
@@ -302,9 +309,12 @@ void handle_command() {
 
   if(cmd_type == COMMAND_NEW_GAME) {
     selected_sqr[BSW] = B_NEW_GAME;
+    handle_logic();
   } else if(cmd_type == COMMAND_END_GAME) {
     selected_sqr[BSW] = B_END_GAME;
+    handle_logic();
   } else {
+    if(game_state != GAME_RUNNING) return;
     parse_command();
   }
 }
@@ -513,5 +523,24 @@ void handle_display() {
 void handle_time_managment() {
   //Runs every 0.1 seconds
   _num = (int) ceil((volume_raw / (volume_max_raw - volume_min_raw)));
+}
+
+void handle_led() {
+  if(status_led_sw == LED_WRONG_MOVE && (led_blink_tempo++ == 0 || led_blink_tempo == LED_TEMPO)) {
+    HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_8);
+    HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_9);
+    HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_10);
+    HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_11);
+    HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_12);
+    HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_13);
+    HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_14);
+    HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_15);
+    led_blink_count++;
+    led_blink_tempo = 0;
+  }
+  if(led_blink_count == LED_WRONG_MOVE_BLINK_COUNT) {
+    status_led_sw = LED_DEFAULT;
+    led_blink_count = 0;
+  }
 }
 //functions end

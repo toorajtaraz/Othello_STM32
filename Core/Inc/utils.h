@@ -40,4 +40,5 @@ void handle_adaptive_volume();
 void handle_display();
 void handle_time_managment();
 void handle_uart();
+void handle_led();
 #endif // UTILS_H_
