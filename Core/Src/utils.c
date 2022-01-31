@@ -327,6 +327,7 @@ void handle_command() {
     handle_logic();
     cur_play_count = 0;
     note_to_play = 0;
+    elapsed_game_time = game_total_time;
   } else if(cmd_type == COMMAND_END_GAME) {
     selected_sqr[BSW] = B_END_GAME;
     handle_logic();
