@@ -3,9 +3,11 @@
 #include "LiquidCrystal.h"
 #include "othello.h"
 #include "math.h"
+#include "stdio.h"
 
 //definitions start
 #define VOLUME_LEVEL 1000
+#define SONG_ORIGINAL_TEMPO 24
 //definitions end
 
 //typedef start
@@ -19,13 +21,15 @@ extern TIM_HandleTypeDef htim2;
 extern uint8_t cur_pressed[];
 extern uint8_t board[BROWS][BCOLS];
 extern uint8_t status_led_sw;
-extern uint8_t selected_sqr[3];
 extern TIM_HandleTypeDef htim2;
 extern uint8_t cur_pressed[];
 extern uint8_t board[BROWS][BCOLS];
 extern uint8_t status_led_sw;
 extern uint8_t game_state;
 extern char turn;
+extern uint8_t game_total_time;
+extern uint8_t elapsed_game_time;
+extern uint32_t game_round_prev_tick;
 //extern variables end
 
 //variables start
@@ -42,12 +46,23 @@ uint8_t volume_has_changed_min = 0;
 uint8_t volume_has_changed_max = 0;
 
 uint16_t freq;
-uint8_t song_tempo = 20;
+uint8_t song_tempo = SONG_ORIGINAL_TEMPO;
 uint16_t play_count = 0;
 uint16_t note_to_play = 0;
 uint16_t cur_play_count = 0;
 
-const uint16_t melody[] = {
+const uint16_t nokia[] = {
+
+  // Nokia Ringtone
+  // Score available at https://musescore.com/user/29944637/scores/5266155
+
+  NOTE_E5, 8, NOTE_D5, 8, NOTE_FS4, 4, NOTE_GS4, 4,
+  NOTE_CS5, 8, NOTE_B4, 8, NOTE_D4, 4, NOTE_E4, 4,
+  NOTE_B4, 8, NOTE_A4, 8, NOTE_CS4, 4, NOTE_E4, 4,
+  NOTE_A4, 2,
+};
+
+const uint16_t god_father[] = {
   // The Godfather theme
   // Score available at https://musescore.com/user/35463/scores/55160
 
@@ -112,6 +127,7 @@ const unsigned char keymap[][4] = {
               {'7', '8', '9', 'C'},
               {'S', '0', 'D', 'E'}
 };
+uint8_t keypad_handler_busy = FALSE;
 
 byte down_white[] = {
   0x00,
@@ -310,9 +326,13 @@ void handle_command() {
   if(cmd_type == COMMAND_NEW_GAME) {
     selected_sqr[BSW] = B_NEW_GAME;
     handle_logic();
+    cur_play_count = 0;
+    note_to_play = 0;
   } else if(cmd_type == COMMAND_END_GAME) {
     selected_sqr[BSW] = B_END_GAME;
     handle_logic();
+    cur_play_count = 0;
+    note_to_play = 0;
   } else {
     if(game_state != GAME_RUNNING) return;
     parse_command();
@@ -347,25 +367,25 @@ void update_selected_sqr() {
   switch (keymap[cur_pressed[1]][cur_pressed[0]]) {
     case KEYPAD_UP: {
       if(IS_UP_IN_RANGE(selected_sqr[BROW], selected_sqr[BCOL])) {
-        selected_sqr[BROW]--;
+        selected_sqr[BROW] -= 1;
       }
     };
       break;
     case KEYPAD_DOWN: {
       if(IS_DOWN_IN_RANGE(selected_sqr[BROW], selected_sqr[BCOL])) {
-        selected_sqr[BROW]++;
+        selected_sqr[BROW] += 1;
       }
     };
       break;
     case KEYPAD_LEFT: {
       if(IS_LEFT_IN_RANGE(selected_sqr[BROW], selected_sqr[BCOL])) {
-        selected_sqr[BCOL]--;
+        selected_sqr[BCOL] -= 1;
       }
     };
       break;
     case KEYPAD_RIGHT: {
       if(IS_RIGHT_IN_RANGE(selected_sqr[BROW], selected_sqr[BCOL])) {
-        selected_sqr[BCOL]++;
+        selected_sqr[BCOL] += 1;
       }
     };
       break;
@@ -481,21 +501,34 @@ void write_number(int num) {
 }
 
 void handle_melody() {
-  return;
-  if(cur_play_count < (melody[note_to_play + 1] * song_tempo)) {
-    if(cur_play_count == 0)
-      PWM_Change_Tone(melody[note_to_play], VOLUME_LEVEL);
-    cur_play_count++;
+  if (game_state == GAME_ENDED || game_state == GAME_HALTED) {
+    if(cur_play_count < (god_father[note_to_play + 1] * song_tempo)) {
+      if(cur_play_count == 0)
+        PWM_Change_Tone(god_father[note_to_play], VOLUME_LEVEL);
+      cur_play_count++;
+    } else {
+      cur_play_count = 0;
+      note_to_play += 2;
+      PWM_Change_Tone(0, 0);
+      if(note_to_play == 258) {
+        note_to_play = 0;
+      }
+    }
   } else {
-    cur_play_count = 0;
-    note_to_play += 2;
-    PWM_Change_Tone(0, 0);
-    if(note_to_play == 258) {
-      note_to_play = 0;
+    if(cur_play_count < (nokia[note_to_play + 1] * song_tempo)) {
+      if(cur_play_count == 0)
+        PWM_Change_Tone(nokia[note_to_play], VOLUME_LEVEL);
+      cur_play_count++;
+    } else {
+      cur_play_count = 0;
+      note_to_play += 2;
+      PWM_Change_Tone(0, 0);
+      if(note_to_play == 26) {
+        note_to_play = 0;
+      }
     }
   }
 }
-
 
 void handle_adaptive_volume() {
   if(HAL_GetTick() - 100 >= volume_prev_tick){
@@ -522,7 +555,41 @@ void handle_display() {
 
 void handle_time_managment() {
   //Runs every 0.1 seconds
-  _num = (int) ceil((volume_raw / (volume_max_raw - volume_min_raw)));
+  if(game_state == GAME_HALTED || game_state == GAME_ENDED) {
+    song_tempo = SONG_ORIGINAL_TEMPO;
+    game_total_time = (int) ((float)(volume_raw - volume_min_raw) * 100) / (volume_max_raw - volume_min_raw);
+    if(game_total_time >= 0 && game_total_time <= 16) {
+      game_total_time = 10;
+    } else if(game_total_time > 16 && game_total_time <= 32) {
+      game_total_time = 20;
+    } else if(game_total_time > 32 && game_total_time <= 48) {
+      game_total_time = 30;
+    } else if(game_total_time > 48 && game_total_time <= 64) {
+      game_total_time = 40;
+    } else if(game_total_time > 64 && game_total_time <= 80) {
+      game_total_time = 50;
+    } else if(game_total_time > 80 && game_total_time <= 100) {
+      game_total_time = 60;
+    }
+    elapsed_game_time = game_total_time;
+  }
+  _num = game_total_time;
+  _num = (_num) + (elapsed_game_time * 100);
+  if(game_state == GAME_RUNNING) {
+    uint32_t temp_time = HAL_GetTick();
+    if((temp_time - game_round_prev_tick) >= 1000) {
+      game_round_prev_tick = temp_time;
+      elapsed_game_time -= 1;
+      if(elapsed_game_time == 0) {
+        game_state = GAME_ENDED;
+        cur_play_count = 0;
+        note_to_play = 0;
+      }
+      if(elapsed_game_time <= 10) {
+        song_tempo -= 2;
+      }
+    }
+  }
 }
 
 void handle_led() {

@@ -98,14 +98,14 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
     /* Peripheral clock enable */
     __HAL_RCC_ADC34_CLK_ENABLE();
 
-    __HAL_RCC_GPIOD_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
     /**ADC4 GPIO Configuration
-    PD14     ------> ADC4_IN11
+    PB14     ------> ADC4_IN4
     */
     GPIO_InitStruct.Pin = GPIO_PIN_14;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
     /* ADC4 interrupt Init */
     HAL_NVIC_SetPriority(ADC4_IRQn, 2, 0);
@@ -134,9 +134,9 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* hadc)
     __HAL_RCC_ADC34_CLK_DISABLE();
 
     /**ADC4 GPIO Configuration
-    PD14     ------> ADC4_IN11
+    PB14     ------> ADC4_IN4
     */
-    HAL_GPIO_DeInit(GPIOD, GPIO_PIN_14);
+    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_14);
 
     /* ADC4 interrupt DeInit */
     HAL_NVIC_DisableIRQ(ADC4_IRQn);

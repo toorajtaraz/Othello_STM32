@@ -23,6 +23,11 @@ uint8_t white_score = 2;
 uint8_t black_score = 2;
 char turn = 'B';
 
+
+uint8_t game_total_time;
+uint8_t elapsed_game_time;
+uint32_t game_round_prev_tick = 0;
+
 void initialize_board() {
     // Every sqr is empty,
     for(uint8_t i = 0; i < BROWS; i++) {
@@ -454,6 +459,7 @@ void handle_logic() {
     if(selected_sqr[BSW] == B_NEW_GAME) {
         initialize_board();
         game_state = GAME_RUNNING;
+        game_round_prev_tick = HAL_GetTick();
         return;
     }
     if(selected_sqr[BSW] == B_END_GAME) {
@@ -477,6 +483,8 @@ void handle_logic() {
         apply_move((turn == 'W') ? WHITE : BLACK, selected_sqr[BROW], selected_sqr[BCOL]);
         selected_sqr[BSW] = SQR_DEFAULT;
     }
+    game_round_prev_tick = HAL_GetTick();
+    elapsed_game_time = game_total_time;
     turn = turn == 'B' ? 'W' : 'B';
     if(has_legal_move(BLACK) == FALSE && has_legal_move(WHITE) == FALSE) {
         game_state = GAME_ENDED;

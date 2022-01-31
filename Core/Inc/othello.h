@@ -72,14 +72,14 @@ typedef uint8_t bool;
 #define BOARD_DOWN_RIGHT(row, col) board[row + 1][col + 1]
 #define BOARD_DOWN_LEFT(row, col) board[row + 1][col - 1]
 
-#define IS_UP_IN_RANGE(row, col) ((row - 1) < BROWS && col < BCOLS)
-#define IS_DOWN_IN_RANGE(row, col) ((row + 1) < BROWS && col < BCOLS)
-#define IS_RIGHT_IN_RANGE(row, col) (row < BROWS && (col + 1) < BCOLS)
-#define IS_LEFT_IN_RANGE(row, col) (row < BROWS && (col - 1) < BCOLS)
-#define IS_UP_RIGHT_IN_RANGE(row, col) ((row - 1) < BROWS && (col + 1) < BCOLS)
-#define IS_UP_LEFT_IN_RANGE(row, col) ((row - 1) < BROWS && (col - 1) < BCOLS)
-#define IS_DOWN_RIGHT_IN_RANGE(row, col) ((row + 1) < BROWS && (col + 1) < BCOLS)
-#define IS_DOWN_LEFT_IN_RANGE(row, col) ((row + 1) < BROWS && (col - 1) < BCOLS)
+#define IS_UP_IN_RANGE(row, col) ((row - 1) < BROWS && col < BCOLS && row >= 1 && col >= 0)
+#define IS_DOWN_IN_RANGE(row, col) ((row + 1) < BROWS && col < BCOLS && (row + 1) >= 0 && col >= 0)
+#define IS_RIGHT_IN_RANGE(row, col) (row < BROWS && (col + 1) < BCOLS && row >= 0 && (col + 1) >= 0)
+#define IS_LEFT_IN_RANGE(row, col) (row < BROWS && (col - 1) < BCOLS && row >= 0 && (col) >= 1)
+#define IS_UP_RIGHT_IN_RANGE(row, col) ((row - 1) < BROWS && (col + 1) < BCOLS && (row) >= 1 && (col + 1) >= 0)
+#define IS_UP_LEFT_IN_RANGE(row, col) ((row - 1) < BROWS && (col - 1) < BCOLS && (row) >= 1 && (col) >= 1)
+#define IS_DOWN_RIGHT_IN_RANGE(row, col) ((row + 1) < BROWS && (col + 1) < BCOLS && (row + 1) >= 0 && (col + 1) >= 0)
+#define IS_DOWN_LEFT_IN_RANGE(row, col) ((row + 1) < BROWS && (col - 1) < BCOLS && (row + 1) >= 0 && (col) >= 1)
 #define IS_EMPTY(row, col) (board[row][col] == EMPTY)
 
 #define ADD_TO_APPLICABLE_DIRECTIONS(dir) applicable_directions[applicable_directions[0]++] = dir
