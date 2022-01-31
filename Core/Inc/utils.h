@@ -28,10 +28,8 @@ void clean_cmd();
 uint8_t command_type();
 void parse_command();
 void handle_command();
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 void add_special_chars();
 void update_selected_sqr();
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin);
 void handle_melody();
 void PWM_Change_Tone(uint16_t pwm_freq, uint16_t volume);
 void write_number(int num);
@@ -41,4 +39,5 @@ void split_number(int num, uint8_t digits[4]);
 void handle_adaptive_volume();
 void handle_display();
 void handle_time_managment();
+void handle_uart();
 #endif // UTILS_H_

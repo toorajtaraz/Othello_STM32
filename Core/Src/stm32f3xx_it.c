@@ -301,7 +301,6 @@ void TIM4_IRQHandler(void)
   /* USER CODE END TIM4_IRQn 0 */
   HAL_TIM_IRQHandler(&htim4);
   /* USER CODE BEGIN TIM4_IRQn 1 */
-  handle_logic();
   handle_display();
   /* USER CODE END TIM4_IRQn 1 */
 }
@@ -316,7 +315,7 @@ void USART3_IRQHandler(void)
   /* USER CODE END USART3_IRQn 0 */
   HAL_UART_IRQHandler(&huart3);
   /* USER CODE BEGIN USART3_IRQn 1 */
-
+  handle_uart();
   /* USER CODE END USART3_IRQn 1 */
 }
 

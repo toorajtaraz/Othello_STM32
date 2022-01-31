@@ -9,6 +9,13 @@ typedef uint8_t bool;
 #define BOARD_POS_ROW_START 0
 #define BOARD_POS_ROW_END 3
 
+#define LEFT_INFO_POS_COL_START 0
+#define LEFT_INFO_POS_COL_END 4
+#define RIGHT_INFO_POS_COL_START 15
+#define RIGHT_INFO_POS_COL_END 19
+#define INFO_POS_ROW_START 0
+#define INFO_POS_ROW_END 3
+
 #define GAME_RUNNING 0
 #define GAME_ENDED 1
 #define GAME_HALTED 2
@@ -80,12 +87,13 @@ typedef uint8_t bool;
 #define APPLICABLE_DIRECTIONS_COUNT applicable_directions[0]
 
 
-void initialize_board();
+bool has_legal_move(uint8_t player);
 bool is_valid_in_direction(uint8_t player, uint8_t pos_row, uint8_t pos_col, uint8_t direction);
 bool is_valid_move(uint8_t player, uint8_t pos_row, uint8_t pos_col);
-void apply_move_in_direction(uint8_t player, uint8_t pointer_row, uint8_t pointer_col, uint8_t direction);
 void apply_move(uint8_t player, uint8_t pos_row, uint8_t pos_col);
-void print_board();
-bool has_legal_move(uint8_t player);
+void apply_move_in_direction(uint8_t player, uint8_t pointer_row, uint8_t pointer_col, uint8_t direction);
 void handle_logic();
+void initialize_board();
+void print_board();
+void print_game_info();
 #endif // OTHELLO_H_

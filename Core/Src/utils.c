@@ -24,13 +24,12 @@ extern TIM_HandleTypeDef htim2;
 extern uint8_t cur_pressed[];
 extern uint8_t board[BROWS][BCOLS];
 extern uint8_t status_led_sw;
-extern uint8_t selected_sqr[3];
 extern uint8_t game_state;
 //extern variables end
 
 //variables start
 
-uint8_t occupied = FALSE;
+uint8_t occupied_display = FALSE;
 
 uint32_t volume_prev_tick = 0;
 uint16_t volume_min_raw = 0;
@@ -295,6 +294,7 @@ void parse_command() {
       break;
   }
   selected_sqr[BSW] = SQR_SELECTED;
+  handle_logic();
 }
 
 void handle_command() {
@@ -309,8 +309,7 @@ void handle_command() {
   }
 }
 
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
-  if(huart->Instance == USART3){
+void handle_uart() {
     cmd[cmd_pointer] = data == 0x0D ? '\0' : data;
     if(++cmd_pointer == 30 && data != 0x0D) {
       clean_cmd();
@@ -320,7 +319,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
       clean_cmd();
       cmd_pointer = 0;
     }
-  }
   HAL_UART_Receive_IT(&huart3,&data,sizeof(data));
 }
 
@@ -336,7 +334,7 @@ void add_special_chars() {
 }
 
 void update_selected_sqr() {
-  switch (keymap[cur_pressed[0]][cur_pressed[1]]) {
+  switch (keymap[cur_pressed[1]][cur_pressed[0]]) {
     case KEYPAD_UP: {
       if(IS_UP_IN_RANGE(selected_sqr[BROW], selected_sqr[BCOL])) {
         selected_sqr[BROW]--;
@@ -363,6 +361,7 @@ void update_selected_sqr() {
       break;
     case KEYPAD_OK: {
       selected_sqr[BSW] = SQR_SELECTED;
+      handle_logic();
     };
       break;
   }
@@ -504,11 +503,11 @@ void handle_adaptive_volume() {
 }
 
 void handle_display() {
-  //some messy lock :)))
-  while(occupied);
-  occupied = TRUE;
+  if(occupied_display) return;
+  occupied_display = TRUE;
   print_board();
-  occupied = FALSE;
+  print_game_info();
+  occupied_display = FALSE;
 }
 
 void handle_time_managment() {

@@ -1,5 +1,9 @@
 #include "othello.h"
 #include "LiquidCrystal.h"
+#include "string.h"
+#include "stdio.h"
+
+extern uint8_t selected_sqr[];
 
 uint8_t game_state = GAME_HALTED;
 uint8_t board[BROWS][BCOLS] = {0};
@@ -14,6 +18,9 @@ uint8_t directions[DIR_COUNT] = {
     DOWN_LEFT
 };
 uint8_t applicable_directions[DIR_COUNT + 1]= {1};
+uint8_t white_score = 2;
+uint8_t black_score = 2;
+char turn = 'B';
 
 void initialize_board() {
     // Every sqr is empty,
@@ -27,6 +34,10 @@ void initialize_board() {
     board[3][4] = BLACK;
     board[4][3] = BLACK;
     board[4][4] = WHITE;
+
+    white_score = 2;
+    black_score = 2;
+    turn = 'B';
 }
 
 bool is_valid_in_direction(uint8_t player, uint8_t pos_row, uint8_t pos_col, uint8_t direction) {
@@ -162,6 +173,7 @@ bool is_valid_move(uint8_t player, uint8_t pos_row, uint8_t pos_col) {
 
     bool ret = FALSE;
     for(uint8_t i = 0; i < DIR_COUNT; i++) {
+
         if(is_valid_in_direction(player, pos_row, pos_col, directions[i])) {
             ret = TRUE;
         }
@@ -278,29 +290,145 @@ void apply_move(uint8_t player, uint8_t pos_row, uint8_t pos_col) {
 }
 
 void print_board() {
+    white_score = 0;
+    black_score = 0;
     for(uint8_t i = 0; i < BROWS; i += 2) {
+        setCursor(BOARD_POS_COL_START - 1, BOARD_POS_ROW_START + (i >> 1));
+        print("|");
+        setCursor(BOARD_POS_COL_END + 1, BOARD_POS_ROW_START + (i >> 1));
+        print("|");
         for(uint8_t j = 0; j < BCOLS; j++) {
             setCursor(BOARD_POS_COL_START + j, BOARD_POS_ROW_START + (i >> 1));
             if (board[i][j] == BLACK && board[i + 1][j] == BLACK) {
                 write(UP_DOWN_BLACK);
+                black_score += 2;
             } else if (board[i][j] == BLACK && board[i + 1][j] == EMPTY) {
                 write(UP_BLACK);
+                black_score++;
             } else if (board[i][j] == BLACK && board[i + 1][j] == WHITE) {
                 write(UP_BLACK_DOWN_WHITE);
+                black_score++;
+                white_score++;
             } else if (board[i][j] == EMPTY && board[i + 1][j] == BLACK) {
                 write(DOWN_BLACK);
+                black_score++;
             } else if (board[i][j] == EMPTY && board[i + 1][j] == EMPTY) {
                 write(' ');
             } else if (board[i][j] == EMPTY && board[i + 1][j] == WHITE) {
                 write(DOWN_WHITE);
+                white_score++;
             } else if (board[i][j] == WHITE && board[i + 1][j] == BLACK) {
                 write(UP_WHITE_DOWN_BLACK);
+                white_score++;
+                black_score++;
             } else if (board[i][j] == WHITE && board[i + 1][j] == EMPTY) {
                 write(UP_WHITE);
+                white_score++;
             } else if (board[i][j] == WHITE && board[i + 1][j] == WHITE) {
                 write(UP_DOWN_WHITE);
+                white_score += 2;
             }
         }
+    }
+}
+
+void print_game_info() {
+    setCursor(LEFT_INFO_POS_COL_START, INFO_POS_ROW_START + 1);
+    char info[5] = {'\0'};
+    sprintf(&info[0], "%02d", white_score);
+    print("WHITE");
+    setCursor(LEFT_INFO_POS_COL_START, INFO_POS_ROW_START + 2);
+    print(info);
+    setCursor(RIGHT_INFO_POS_COL_START, INFO_POS_ROW_START + 1);
+    sprintf(&info[0], "%02d", black_score);
+    print("BLACK");
+    setCursor(RIGHT_INFO_POS_COL_START, INFO_POS_ROW_START + 2);
+    print(info);
+
+    setCursor(RIGHT_INFO_POS_COL_START, INFO_POS_ROW_END);
+    info[4] = '\0';
+    info[2] = ' ';
+    info[3] = turn;
+    switch (selected_sqr[BROW]) {
+        case SQR_1: {
+            info[1] = '1';
+        };
+            break;
+        case SQR_2: {
+            info[1] = '2';
+        };
+            break;
+        case SQR_3: {
+            info[1] = '3';
+        };
+            break;
+        case SQR_4: {
+            info[1] = '4';
+        };
+            break;
+        case SQR_5: {
+            info[1] = '5';
+        };
+            break;
+        case SQR_6: {
+            info[1] = '6';
+        };
+            break;
+        case SQR_7: {
+            info[1] = '7';
+        };
+            break;
+        case SQR_8: {
+            info[1] = '8';
+        };
+            break;
+    }
+
+    switch (selected_sqr[BCOL]) {
+        case A_SQR: {
+            info[0] = 'A';
+        };
+            break;
+        case B_SQR: {
+            info[0] = 'B';
+        };
+            break;
+        case C_SQR: {
+            info[0] = 'C';
+        };
+            break;
+        case D_SQR: {
+            info[0] = 'D';
+        };
+            break;
+        case E_SQR: {
+            info[0] = 'E';
+        };
+            break;
+        case F_SQR: {
+            info[0] = 'F';
+        };
+            break;
+        case G_SQR: {
+            info[0] = 'G';
+        };
+            break;
+        case H_SQR: {
+            info[0] = 'H';
+        };
+            break;
+    }
+    print(info);
+
+    setCursor(LEFT_INFO_POS_COL_START, INFO_POS_ROW_END);
+    sprintf(&info[0], (white_score > black_score) ? "%02d W" : "%02d B", (white_score > black_score) ? (white_score - black_score) : (black_score - white_score));
+    print(info);
+    if (game_state == GAME_ENDED) {
+        setCursor(RIGHT_INFO_POS_COL_START, INFO_POS_ROW_START);
+        print("OVER");
+    } else {
+        setCursor(RIGHT_INFO_POS_COL_START, INFO_POS_ROW_START);
+        print("    ");
     }
 }
 
@@ -322,5 +450,23 @@ bool has_legal_move(uint8_t player) {
 }
 
 void handle_logic() {
+    if(! (selected_sqr[BSW] == SQR_SELECTED)) return;
 
+    if(has_legal_move((turn == 'W') ? WHITE : BLACK) == FALSE) {
+        turn = turn == 'B' ? 'W' : 'B';
+        return;
+    }
+
+    if (is_valid_move((turn == 'W') ? WHITE : BLACK, selected_sqr[BROW], selected_sqr[BCOL]) == FALSE) {
+        selected_sqr[BSW] = SQR_DEFAULT;
+        return;
+    }
+    if(selected_sqr[BSW] == SQR_SELECTED) {
+        apply_move((turn == 'W') ? WHITE : BLACK, selected_sqr[BROW], selected_sqr[BCOL]);
+        selected_sqr[BSW] = SQR_DEFAULT;
+    }
+    turn = turn == 'B' ? 'W' : 'B';
+    if(has_legal_move(BLACK) == FALSE && has_legal_move(WHITE) == FALSE) {
+        game_state = GAME_ENDED;
+    }
 }
