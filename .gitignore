@@ -1,7 +1,3 @@
-.DS_Store
-.idea
-*.log
-tmp/
 # Prerequisites
 *.d
 
@@ -55,6 +51,8 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
-compile_commands.json
 Debug
 Release
+
+Debug/
+Release/
